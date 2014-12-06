@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 @python_2_unicode_compatible
 class Generator(object):
-    """Baseclass generator"""
+    """Baseclass of generators"""
 
     def __init__(self, context, settings, path, theme, output_path,
                  readers_cache_name='', **kwargs):

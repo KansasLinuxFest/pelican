@@ -3,11 +3,23 @@ Pelican |build-status| |coverage-status|
 
 Pelican is a static site generator, written in Python_.
 
+
 * Write your weblog entries directly with your editor of choice (vim!)
   in reStructuredText_ or Markdown_
 * Includes a simple CLI tool to (re)generate the weblog
 * Easy to interface with DVCSes and web hooks
 * Completely static output is easy to host anywhere
+
+TL;DR
+-----
+
+    git clone git@github.com:KansasLinuxFest/pelican.git
+
+    cd pelican/
+
+    python setup.py  install --user
+
+    ~/.local/bin/pelican
 
 Features
 --------
@@ -28,6 +40,7 @@ Pelican currently supports:
 * Fast rebuild times thanks to content caching and selective output writing.
 
 Have a look at the `Pelican documentation`_ for more information.
+
 
 Why the name "Pelican"?
 -----------------------
