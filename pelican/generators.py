@@ -9,7 +9,7 @@ import logging
 import shutil
 import fnmatch
 import calendar
-
+import pprint 
 from codecs import open
 from collections import defaultdict
 from functools import partial
@@ -49,11 +49,17 @@ class Generator(object):
         # templates cache
         self._templates = {}
         self._templates_path = []
+        print("Theme: %s" % pprint.pformat(self.theme))
+
         self._templates_path.append(os.path.expanduser(
             os.path.join(self.theme, 'templates')))
         self._templates_path += self.settings['EXTRA_TEMPLATES_PATHS']
 
+        print("templates_path:%s" % pprint.pformat(self._templates_path))
+
         theme_path = os.path.dirname(os.path.abspath(__file__))
+
+        print("theme_path:%s" % pprint.pformat(theme_path))
 
         simple_loader = FileSystemLoader(os.path.join(theme_path,
                                          "themes", "simple", "templates"))
@@ -86,11 +92,16 @@ class Generator(object):
         """
         if name not in self._templates:
             try:
+                #pprint.pprint({'env':self.env })
                 self._templates[name] = self.env.get_template(name + '.html')
             except TemplateNotFound:
                 raise Exception('[templates] unable to load %s.html from %s'
                                 % (name, self._templates_path))
-        return self._templates[name]
+        t= self._templates[name]
+        pprint.pprint({'template':t })
+        #pprint.pprint({'template debug':t.debug_info })
+        pprint.pprint({'template debug':t.__dict__['filename'] })
+        return t
 
     def _include_path(self, path, extensions=None):
         """Inclusion logic for .get_files(), returns True/False
@@ -238,6 +249,8 @@ class TemplatePagesGenerator(Generator):
             try:
                 template = self.env.get_template(source)
                 rurls = self.settings['RELATIVE_URLS']
+                print ("rendering %s %s" % (source, dest))
+                print ("context %s" % (self.context))
                 writer.write_file(dest, template, self.context, rurls,
                                   override_output=True)
             finally:
@@ -348,6 +361,8 @@ class ArticlesGenerator(CachingGenerator):
         """Generate the articles."""
         for article in chain(self.translations, self.articles):
             signals.article_generator_write_article.send(self, content=article)
+            print("article :%s", pprint.pformat(article))
+
             write(article.save_as, self.get_template(article.template),
                   self.context, article=article, category=article.category,
                   override_output=hasattr(article, 'override_save_as'))
@@ -467,6 +482,7 @@ class ArticlesGenerator(CachingGenerator):
 
     def generate_pages(self, writer):
         """Generate the pages on the disk"""
+        print("write %s" % writer.write_file)
         write = partial(writer.write_file,
                         relative_urls=self.settings['RELATIVE_URLS'])
 
@@ -664,8 +680,14 @@ class PagesGenerator(CachingGenerator):
     def generate_output(self, writer):
         for page in chain(self.translations, self.pages,
                           self.hidden_translations, self.hidden_pages):
+            print ("generate page %s" % page)
+            print ("generate page with template %s" % page.template)
+            print ("generate page with template %s" % pprint.pformat(page.__dict__))
+            #print ("generate page with template %s" % pprint.pformat(self.context))
+            t  = self.get_template(page.template)
+            print ("template %s" % t)
             writer.write_file(
-                page.save_as, self.get_template(page.template),
+                page.save_as, t,
                 self.context, page=page,
                 relative_urls=self.settings['RELATIVE_URLS'],
                 override_output=hasattr(page, 'override_save_as'))
