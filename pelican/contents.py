@@ -11,6 +11,7 @@ import os
 import re
 import sys
 
+import pytz
 
 from pelican import signals
 from pelican.settings import DEFAULT_CONFIG
@@ -132,8 +133,12 @@ class Content(object):
         # manage status
         if not hasattr(self, 'status'):
             self.status = settings['DEFAULT_STATUS']
-            if not settings['WITH_FUTURE_DATES']:
-                if hasattr(self, 'date') and self.date > SafeDatetime.now():
+            if not settings['WITH_FUTURE_DATES'] and hasattr(self, 'date'):
+                if self.date.tzinfo is None:
+                    now = SafeDatetime.now()
+                else:
+                    now = SafeDatetime.utcnow().replace(tzinfo=pytz.utc)
+                if self.date > now:
                     self.status = 'draft'
 
         # store the summary metadata if it is set
@@ -252,9 +257,9 @@ class Content(object):
                             'limit_msg': ("Other resources were not found "
                                           "and their urls not replaced")})
             elif what == 'category':
-                origin = Category(path, self.settings).url
+                origin = '/'.join((siteurl, Category(path, self.settings).url))
             elif what == 'tag':
-                origin = Tag(path, self.settings).url
+                origin = '/'.join((siteurl, Tag(path, self.settings).url))
 
             # keep all other parts, such as query, fragment, etc.
             parts = list(value)
